@@ -25,6 +25,6 @@ class TraktClient(object):
 
             stream = urllib.urlopen("http://api.trakt.tv/" + method,
                                     encoded_data)
-            print stream.read()
+            return json.loads(stream.read())
         else:
             pass #Build url with data embedded.
