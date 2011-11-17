@@ -1,5 +1,4 @@
 *.pyc
-.DS_STORE
-simplejson/.DS_Store
 *.komodoproject
-TraktforBoxee.komodoproject
+*.DS_Store*
+settings.cfg
