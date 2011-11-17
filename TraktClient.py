@@ -9,5 +9,5 @@ class TraktClient(object):
         password_hash = sha.new(password).hexdigest()
         pass
     
-    def callMethod(self, method)
+    def callMethod(self, method):
         pass
