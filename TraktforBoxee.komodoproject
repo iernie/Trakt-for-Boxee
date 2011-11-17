@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Komodo Project File - DO NOT EDIT -->
+<project id="2739abf4-00c5-3144-b4b9-8c2225b6fecd" kpf_version="5" name="TraktforBoxee.komodoproject">
+<livefolder id="1f8ae40b-f3d5-0b47-ba0e-951895469d8a" idref="2739abf4-00c5-3144-b4b9-8c2225b6fecd" name="simplejson" url="simplejson">
+</livefolder>
+<file id="27838d91-f823-a24b-a355-37c0595f9b81" idref="2739abf4-00c5-3144-b4b9-8c2225b6fecd" name="boxeeboxclient.py" url="boxeeboxclient.py">
+</file>
+<file id="5ad3dfd7-6690-3e47-ad59-41bc0ac64205" idref="2739abf4-00c5-3144-b4b9-8c2225b6fecd" name="main.py" url="main.py">
+</file>
+</project>
