@@ -117,17 +117,26 @@ class BoxeeBoxClient:
                                      'VideoPlayer.Year',
                                      'VideoPlayer.TVShowTitle',
                                      'VideoPlayer.Season',
-                                     'VideoPlayer.Episode'])
+                                     'VideoPlayer.Episode',
+                                     'VideoPlayer.Duration'])
         
         title = labels["VideoPlayer.Title"]
         year = labels["VideoPlayer.Year"]
         tvshowtitle = labels["VideoPlayer.TVShowTitle"]
         season = labels["VideoPlayer.Season"]
         episode = labels["VideoPlayer.Episode"]
+        duration = int(labels["VideoPlayer.Duration"].split(":")[0])
         
         out = {}
+        
+        if (title == ""):
+            out["type"] = "none"
+            return out
+        
         out["year"] = year
-        out["percentage"] = self.getVideoPlayerPercentage()
+        out["duration"] = duration
+        out["percentage"] = int(self.getVideoPlayerPercentage())
+        
         if (tvshowtitle != ""):
             out["type"] = "tv"
             out["title"] = tvshowtitle
@@ -137,6 +146,8 @@ class BoxeeBoxClient:
         else:
             out["type"] = "movie"
             out["title"] = title
+        
+        return out
     
     def getVideoPlayerPercentage(self):
         return float(self.callMethod("VideoPlayer.GetPercentage")["result"])

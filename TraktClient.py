@@ -28,3 +28,16 @@ class TraktClient(object):
             return json.loads(stream.read())
         else:
             pass #Decisions...
+
+    def scrobbleShow(self, title, year, season, episode, duration, progress,
+                     plugin_ver, media_center_ver, media_center_date):
+        data = {'title': title,
+                'year': year,
+                'season': season,
+                'episode': episode,
+                'duration': duration,
+                'progress': progress,
+                'plugin_version': plugin_ver,
+                'media_center_version': media_center_ver,
+                'media_center_date': media_center_date}
+        
