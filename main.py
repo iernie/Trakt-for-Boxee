@@ -1,5 +1,4 @@
-import boxeeboxclient as bbc
-import time
+import TraktForBoxee
 
 if __name__ == '__main__':
     client = bbc.BoxeeBoxClient("666", "192.168.1.148", 9090, "unittest", "Unit Testing Harness")

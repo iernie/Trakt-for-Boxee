@@ -17,15 +17,6 @@ import simplejson
 import urllib
 import urllib2
 
-'''
-Logging Configuration
-'''
-logging_level = logging.INFO
-log_handler = logging.StreamHandler(sys.stdout)
-log_handler.setLevel(logging_level) 
-log_formatter = logging.Formatter('%(asctime)s::%(name)s::%(levelname)s::%(message)s')
-log_handler.setFormatter(log_formatter)
-
 class BoxeeBoxClient:
     def __init__(self, device_id, host, port=9090, application_id="pythonclient", application_label="Boxee Box Python Client"):
         self.device_id = device_id
@@ -34,8 +25,6 @@ class BoxeeBoxClient:
         self.application_id = application_id
         self.application_label = application_label       
         self.log = logging.getLogger("BoxeeBoxPythonClient")
-        self.log.setLevel(logging_level)
-        self.log.addHandler(log_handler)
         self.log.debug("Initialized Boxee Box Python Client.")
         self.id = 100
         
@@ -113,7 +102,44 @@ class BoxeeBoxClient:
             self.socket.close()
         except Exception, e:
             raise BoxeeClientException("Error closing connection to host %s:%s" % (self.host, str(self.port)), e)
-          
+    
+    def getActivePlayers(self):
+        resp = self.callMethod("Player.GetActivePlayers")
+        return (resp["result"]["picture"], resp["result"]["audio"],
+                resp["result"]["video"], resp["result"]["browser"])
+    
+    def getInfoLabels(self, labels):
+        resp = self.callMethod("System.GetInfoLabels", {'labels': labels}, True);
+        return resp["result"]
+    
+    def getCurrentlyPlaying(self):
+        labels = self.getInfoLabels(['VideoPlayer.Title',
+                                     'VideoPlayer.Year',
+                                     'VideoPlayer.TVShowTitle',
+                                     'VideoPlayer.Season',
+                                     'VideoPlayer.Episode'])
+        
+        title = labels["VideoPlayer.Title"]
+        year = labels["VideoPlayer.Year"]
+        tvshowtitle = labels["VideoPlayer.TVShowTitle"]
+        season = labels["VideoPlayer.Season"]
+        episode = labels["VideoPlayer.Episode"]
+        
+        out = {}
+        out["year"] = year
+        out["percentage"] = self.getVideoPlayerPercentage()
+        if (tvshowtitle != ""):
+            out["type"] = "tv"
+            out["title"] = tvshowtitle
+            out["season"] = season
+            out["episode"] = episode
+            out["episode_title"] = title
+        else:
+            out["type"] = "movie"
+            out["title"] = title
+    
+    def getVideoPlayerPercentage(self):
+        return float(self.callMethod("VideoPlayer.GetPercentage")["result"])
 
 class BoxeeBoxStreamClient(asyncore.dispatcher):
     def __init__(self, device_id, host, port=9090, application_id="pythonclient", application_label="Boxee Box Python Client"):
@@ -125,8 +151,6 @@ class BoxeeBoxStreamClient(asyncore.dispatcher):
         self.application_label = application_label     
         self.create_socket (socket.AF_INET, socket.SOCK_STREAM)       
         self.log = logging.getLogger("BoxeeBoxStreamPythonClient")
-        self.log.setLevel(logging_level)
-        self.log.addHandler(log_handler)
         self.log.debug("Initialized Boxee Box Stream Python Client.")
         self.id = 100
         
@@ -191,7 +215,6 @@ class BoxeeClientException(Exception):
     
     def setLogger(self, label):
         log = logging.getLogger(label)
-        log.addHandler(log_handler)
         return log
     
     def identifyException(self, message, e):

@@ -27,4 +27,4 @@ class TraktClient(object):
                                     encoded_data)
             return json.loads(stream.read())
         else:
-            pass #Build url with data embedded.
+            pass #Decisions...
