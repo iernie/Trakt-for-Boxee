@@ -45,7 +45,9 @@ class TraktForBoxee(object):
         BOXEE_VERSION = build_info["System.BuildVersion"]
         BOXEE_DATE = build_info["System.BuildDate"]
         
-        self.log.debug(self.boxee_client.getCurrentlyPlaying())
+        self.run()
+        
+        #self.log.debug(self.boxee_client.getCurrentlyPlaying())
         
         #t = self.client.callMethod("System.GetInfoLabels", {'labels': ['VideoPlayer.Title', 'VideoPlayer.TVShowTitle', 'VideoPlayer.Season', 'VideoPlayer.Time', 'VideoPlayer.Year']}, True);
         #t = self.client.callMethod("VideoPlayer.GetPercentage")
@@ -55,8 +57,16 @@ class TraktForBoxee(object):
         #self.client = bbc.BoxeeBoxClient("57", "192.168.1.148", 9090, "traktforboxee", "Trakt for Boxee")
     
     def run(self):
-        while (true):
-            pass
+        while (True):
+            status = self.boxee_client.getCurrentlyPlaying()
+            if (status["type"] == "tv" and
+                status["percentage"] >= 90):
+                self.log.debug("WE ARE SCROBBLING!")
+                self.boxee_client.showNotification("Scrobbling to Trakt!")
+                break
+            self.log.debug("NOT SCROBBLING SLEEPING!")
+            time.sleep(5)
+                
         
 if __name__ == '__main__':
     test = TraktForBoxee()

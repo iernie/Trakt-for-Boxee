@@ -72,7 +72,7 @@ class BoxeeBoxClient:
         self.log.debug("Reading response...")
         data = ""
         while True:
-            chunk = self.socket.recv(1024)
+            chunk = self.socket.recv(1)
             if not chunk:
                 break
             data += chunk
@@ -83,6 +83,9 @@ class BoxeeBoxClient:
         json = simplejson.loads(data)
         if json.has_key("error"):
             raise BoxeeClientException("Found error code %i in response: %s" % (json['error']['code'], json['error']['message']), "APIError")
+        elif json.has_key("method") and json["method"] == "Announcement":
+            self.log.debug("Got an announcement, but we don't know how to handle those right now. Try and read again and pray to the spaghetti monster god that this works!")
+            return self.readResponse()
         else:
             self.log.debug("No error found in response.")
             self.log.debug("Response: %s" % str(json))
@@ -125,7 +128,7 @@ class BoxeeBoxClient:
         tvshowtitle = labels["VideoPlayer.TVShowTitle"]
         season = labels["VideoPlayer.Season"]
         episode = labels["VideoPlayer.Episode"]
-        duration = int(labels["VideoPlayer.Duration"].split(":")[0])
+        duration = labels["VideoPlayer.Duration"]
         
         out = {}
         
@@ -134,7 +137,7 @@ class BoxeeBoxClient:
             return out
         
         out["year"] = year
-        out["duration"] = duration
+        out["duration"] = int(duration.split(":")[0])
         out["percentage"] = int(self.getVideoPlayerPercentage())
         
         if (tvshowtitle != ""):
@@ -151,6 +154,9 @@ class BoxeeBoxClient:
     
     def getVideoPlayerPercentage(self):
         return float(self.callMethod("VideoPlayer.GetPercentage")["result"])
+    
+    def showNotification(self, notification):
+        self.callMethod("GUI.NotificationShow", {"msg": notification}, True)
 
 class BoxeeBoxStreamClient(asyncore.dispatcher):
     def __init__(self, device_id, host, port=9090, application_id="pythonclient", application_label="Boxee Box Python Client"):

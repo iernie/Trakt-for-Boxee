@@ -41,3 +41,4 @@ class TraktClient(object):
                 'media_center_version': media_center_ver,
                 'media_center_date': media_center_date}
         
+        self.call_method("show/scrobble/%API%", data)
