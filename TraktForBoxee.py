@@ -9,6 +9,7 @@ import time
 
 VERSION = "1.0"
 BOXEE_VERSION = BOXEE_DATE = ""
+TIMER_INTERVAL = 10
 
 class TraktForBoxee(object):
     
@@ -45,6 +46,13 @@ class TraktForBoxee(object):
         BOXEE_VERSION = build_info["System.BuildVersion"]
         BOXEE_DATE = build_info["System.BuildDate"]
         
+        self.SCROBBLE_TV = self.config.getboolean("TraktForBoxee", "ScrobbleTV")
+        self.SCROBBLE_MOVIE = self.config.getboolean("TraktForBoxee", "ScrobbleMovie")
+        self.NOTIFY_BOXEE = self.config.getboolean("TraktForBoxee", "NotifyBoxee")
+        
+        self.scrobbled = False
+        self.watching_now = ""
+        
         self.run()
         
         #self.log.debug(self.boxee_client.getCurrentlyPlaying())
@@ -57,15 +65,33 @@ class TraktForBoxee(object):
         #self.client = bbc.BoxeeBoxClient("57", "192.168.1.148", 9090, "traktforboxee", "Trakt for Boxee")
     
     def run(self):
+        timer = 0
         while (True):
             status = self.boxee_client.getCurrentlyPlaying()
-            if (status["type"] == "tv" and
-                status["percentage"] >= 90):
-                self.log.debug("WE ARE SCROBBLING!")
-                self.boxee_client.showNotification("Scrobbling to Trakt!")
-                break
-            self.log.debug("NOT SCROBBLING SLEEPING!")
-            time.sleep(5)
+            
+            if (self.watching_now != status["Filename"]):
+                self.watching_now = status["Filename"]
+                self.scrobbled = false
+                self.log.debug("Now watching something else, cancel current watchings.")
+                self.trakt_client.cancelWatching()
+            
+            
+            
+            if (status["type"] == "tv"):
+                if (status["percentage"] >= 90
+                and not self.scrobbled):
+                    self.log.debug("WE ARE SCROBBLING!")
+                    if (self.NOTIFY_BOXEE):
+                        self.boxee_client.showNotification("Scrobbling to Trakt!")
+                    self.scrobbled = True
+                elif (status["percentage"] < 90
+                      and not self.scrobbled
+                      and timer > 60):
+                    self.log.debug("WE ARE UPDATING WATCHING!")
+                    #Todo: finish this!
+            
+            self.log.debug("NOT SCROBBLING!")
+            time.sleep(TIMER_INTERVAL)
                 
         
 if __name__ == '__main__':

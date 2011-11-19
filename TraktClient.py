@@ -42,3 +42,45 @@ class TraktClient(object):
                 'media_center_date': media_center_date}
         
         self.call_method("show/scrobble/%API%", data)
+        
+    def watchingShow(self, title, year, season, episode, duration, progress,
+                     plugin_ver, media_center_ver, media_center_date):
+        data = {'title': title,
+                'year': year,
+                'season': season,
+                'episode': episode,
+                'duration': duration,
+                'progress': progress,
+                'plugin_version': plugin_ver,
+                'media_center_version': media_center_ver,
+                'media_center_date': media_center_date}
+        
+        self.call_method("show/watching/%API%", data)
+        
+    def scrobbleMovie(self, title, year, duration, progress, plugin_ver,
+                      media_center_ver, media_center_date):
+        data = {'title': title,
+                'year': year,
+                'duration': duration,
+                'progress': progress,
+                'plugin_version': plugin_ver,
+                'media_center_version': media_center_ver,
+                'media_center_date': media_center_date}
+        
+        self.call_method("movie/scrobble/%API%", data)
+        
+    def watchingMovie(self, title, year, duration, progress, plugin_ver,
+                      media_center_ver, media_center_date):
+        data = {'title': title,
+                'year': year,
+                'duration': duration,
+                'progress': progress,
+                'plugin_version': plugin_ver,
+                'media_center_version': media_center_ver,
+                'media_center_date': media_center_date}
+        
+        self.call_method("movie/watching/%API%", data)
+    
+    def cancelWatching(self):
+        self.call_method("show/cancelwatching/%API%")
+        self.call_method("movie/cancelwatching/%API%")
