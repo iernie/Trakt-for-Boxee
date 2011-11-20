@@ -33,7 +33,7 @@ class TraktForBoxee(object):
                                                           "traktforboxee",
                                                           "Trakt for Boxee")
         
-        trakt_api = self.config.get("Trakt", "APIKey")
+        trakt_api = "f46fbebb833fbeb8196b69e0e8d5de8f852b7ea6"
         trakt_username = self.config.get("Trakt", "Username")
         trakt_password = self.config.get("Trakt", "Password")
         
