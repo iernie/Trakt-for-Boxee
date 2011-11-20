@@ -11,6 +11,9 @@ class TraktClient(object):
         self.username = username
         self.password = sha1(password).hexdigest()
         self.apikey = apikey
+        self.log = logging.getLogger("TraktClient")
+        
+        self.log.debug("TraktClient logger initialized")
     
     def call_method(self, method, data = {}, post=True):
         method = method.replace("%API%", self.apikey)
@@ -25,40 +28,16 @@ class TraktClient(object):
 
             stream = urllib.urlopen("http://api.trakt.tv/" + method,
                                     encoded_data)
-            return json.loads(stream.read())
+            resp = stream.read()
+            self.log.debug("Response from Trakt: " + resp)
+            
+            return json.loads(resp)
         else:
             pass #Decisions...
 
-    def scrobbleShow(self, title, year, season, episode, duration, progress,
-                     plugin_ver, media_center_ver, media_center_date):
-        data = {'title': title,
-                'year': year,
-                'season': season,
-                'episode': episode,
-                'duration': duration,
-                'progress': progress,
-                'plugin_version': plugin_ver,
-                'media_center_version': media_center_ver,
-                'media_center_date': media_center_date}
-        
-        self.call_method("show/scrobble/%API%", data)
-        
-    def watchingShow(self, title, year, season, episode, duration, progress,
-                     plugin_ver, media_center_ver, media_center_date):
-        data = {'title': title,
-                'year': year,
-                'season': season,
-                'episode': episode,
-                'duration': duration,
-                'progress': progress,
-                'plugin_version': plugin_ver,
-                'media_center_version': media_center_ver,
-                'media_center_date': media_center_date}
-        
-        self.call_method("show/watching/%API%", data)
-        
-    def scrobbleMovie(self, title, year, duration, progress, plugin_ver,
-                      media_center_ver, media_center_date):
+    def update_media_status(self, title, year, duration, progress, plugin_ver,
+                            media_center_ver, media_center_date,
+                            tv=False, season=-1, episode=-1, scrobble=False):
         data = {'title': title,
                 'year': year,
                 'duration': duration,
@@ -67,19 +46,18 @@ class TraktClient(object):
                 'media_center_version': media_center_ver,
                 'media_center_date': media_center_date}
         
-        self.call_method("movie/scrobble/%API%", data)
+        method = "%s/%s/" % ("show" if tv else "movie",
+                             "scrobble" if scrobble else "watching")
         
-    def watchingMovie(self, title, year, duration, progress, plugin_ver,
-                      media_center_ver, media_center_date):
-        data = {'title': title,
-                'year': year,
-                'duration': duration,
-                'progress': progress,
-                'plugin_version': plugin_ver,
-                'media_center_version': media_center_ver,
-                'media_center_date': media_center_date}
+        self.log.debug("Calling API Method " + method)
         
-        self.call_method("movie/watching/%API%", data)
+        method += "%API%"
+        
+        if (tv):
+            data["season"] = season
+            data["episode"] = episode
+        
+        self.call_method(method, data)
     
     def cancelWatching(self):
         self.call_method("show/cancelwatching/%API%")

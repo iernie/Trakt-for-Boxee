@@ -138,9 +138,12 @@ class BoxeeBoxClient:
             return out
         
         out["Filename"] = labels["Player.Filenameandpath"]
-        out["year"] = year
+        out["year"] = year if year != "" else "0"
         out["duration"] = int(duration.split(":")[0])
         out["percentage"] = int(self.getVideoPlayerPercentage())
+        out["episode"] = ""
+        out["season"] = ""
+        out["episode_title"] = ""
         
         if (tvshowtitle != ""):
             out["type"] = "tv"
