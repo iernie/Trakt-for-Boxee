@@ -54,15 +54,6 @@ class TraktForBoxee(object):
         self.watching_now = ""
         
         self.run()
-        
-        #self.log.debug(self.boxee_client.getCurrentlyPlaying())
-        
-        #t = self.client.callMethod("System.GetInfoLabels", {'labels': ['VideoPlayer.Title', 'VideoPlayer.TVShowTitle', 'VideoPlayer.Season', 'VideoPlayer.Time', 'VideoPlayer.Year']}, True);
-        #t = self.client.callMethod("VideoPlayer.GetPercentage")
-        #self.log.debug(t["result"])
-        #self.log.debug(int(self.boxee_client.getVideoPlayerPercentage()))
-        #print self.client.getActivePlayers()
-        #self.client = bbc.BoxeeBoxClient("57", "192.168.1.148", 9090, "traktforboxee", "Trakt for Boxee")
     
     def run(self):
         timer = 0
