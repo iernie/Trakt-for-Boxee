@@ -22,7 +22,7 @@ class TraktForBoxee(object):
         self.log.debug("Initialized Trakt for Boxee.")
         
         self.config = ConfigParser.RawConfigParser()
-        self.config.read("settings.cfg")
+        self.config.read(sys.path[0] + "/settings.cfg")
         
         boxee_ip = self.config.get("Boxee", "IP")
         boxee_port = self.config.getint("Boxee", "Port")
@@ -122,7 +122,7 @@ class TraktForBoxee(object):
 
 def pair():
     config = ConfigParser.RawConfigParser()
-    config.read("settings.cfg")
+    config.read(sys.path[0] + "/settings.cfg")
     
     ip = config.get("Boxee", "IP")
     port = config.get("Boxee", "Port")
