@@ -66,7 +66,9 @@ class TraktForBoxee(object):
                 time.sleep(TIMER_INTERVAL)
                 continue
                 
-            watching_now = status["title"] + status["year"] + status["episode"] + status["season"] + status["episode_title"] + str(status["duration"])
+            watching_now = (status["title"] + status["year"] +
+                            status["episode"] + status["season"] +
+                            status["episode_title"] + str(status["duration"]))
             if (self.watching_now != watching_now):
                 self.watching_now = watching_now
                 self.scrobbled = False
@@ -78,6 +80,7 @@ class TraktForBoxee(object):
                 (not tv and not self.SCROBBLE_MOVIE)):
                 self.log.debug("Set to ignore this media type, doing so.")
                 time.sleep(TIMER_INTERVAL)
+                continue
             
             if (status["percentage"] >= 90
                 and not self.scrobbled):
@@ -104,7 +107,8 @@ class TraktForBoxee(object):
                 self.log.debug("WE ARE UPDATING WATCHING STATUS!")
                 timer = 0
                 
-                self.boxee_client.showNotification("Watching on Trakt!")
+                if (self.NOTIFY_BOXEE):
+                    self.boxee_client.showNotification("Watching on Trakt!")
                 self.trakt_client.update_media_status(status["title"],
                                                       status["year"],
                                                       status["duration"],
@@ -134,7 +138,10 @@ def pair():
                                                'label': client.application_label,
                                                'icon': "http://dir.boxee.tv/apps/workbench/images/thumb.png",
                                                'type': 'remote'})
-    code = raw_input("Enter the code displyed on the screen of your Boxee Box: ")
+    code = False
+    while (not code or len(code) != 4):
+        code = raw_input("Enter the code displyed on the screen of your Boxee Box: ")
+    
     client.callMethod("Device.PairResponse", {'deviceid': "9001", 'code': code})
     print "You are now ready to scrobble to Trakt.tv."
 
