@@ -52,8 +52,6 @@ class TraktForBoxee(object):
         
         self.scrobbled = False
         self.watching_now = ""
-        
-        self.run()
     
     def run(self):
         timer = 0
@@ -121,7 +119,30 @@ class TraktForBoxee(object):
             
             self.log.debug("NOT SCROBBLING... " + str(timer))
             time.sleep(TIMER_INTERVAL)
-                
-        
+
+def pair():
+    config = ConfigParser.RawConfigParser()
+    config.read("settings.cfg")
+    
+    ip = config.get("Boxee", "IP")
+    port = config.get("Boxee", "Port")
+    
+    client = boxeeboxclient.BoxeeBoxClient("9001", ip, int(port), "traktforboxee",
+                                           "Trakt for Boxee")
+    client.callMethod("Device.PairChallenge", {'deviceid': "9001",
+                                               'applicationid': client.application_id,
+                                               'label': client.application_label,
+                                               'icon': "http://dir.boxee.tv/apps/workbench/images/thumb.png",
+                                               'type': 'remote'})
+    code = raw_input("Enter the code displyed on the screen of your Boxee Box: ")
+    client.callMethod("Device.PairResponse", {'deviceid': "9001", 'code': code})
+    print "You are now ready to scrobble to Trakt.tv."
+
 if __name__ == '__main__':
-    test = TraktForBoxee()
+    args = sys.argv
+    if (len(args) > 1):
+        if (args[1] == "pair"):
+            pair()
+    else:
+        client = TraktForBoxee()
+        client.run()

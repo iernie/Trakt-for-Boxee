@@ -10,4 +10,5 @@ Installation
 1. Install [Python 2.7.2](http://python.org/download/releases/2.7.2/) if you don't have it installed already.
 2. Download the latest version of Trakt for Boxee [here](https://github.com/cold12/Trakt-for-Boxee/zipball/master)
 3. Edit settings_example.cfg approriately, leave the Boxee port if you're unsure, and rename it to settings.cfg (or make a fresh copy if you want).
-4. Run TraktForBoxee.py via 'python TraktForBoxee.py' in the command line.
+4. Pair Trakt For Boxee to your Boxee Box via the command 'python TraktForBoxee.py pair' in the command line.
+5. Run Trakt For Boxee via 'python TraktForBoxee.py' in the command line.
