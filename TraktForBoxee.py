@@ -6,6 +6,7 @@ import boxeeboxclient
 import TraktClient
 import sys
 import time
+import re
 
 VERSION = "1.0"
 BOXEE_VERSION = BOXEE_DATE = ""
@@ -137,9 +138,12 @@ def pair():
                                                'applicationid': client.application_id,
                                                'label': client.application_label,
                                                'icon': "http://dir.boxee.tv/apps/workbench/images/thumb.png",
-                                               'type': 'remote'})
+                                               'type': 'other'})
+    
+    pattern = re.compile("^[0-9]{4}$")
+    
     code = False
-    while (not code or len(code) != 4):
+    while (not code or pattern.match(code) is None):
         code = raw_input("Enter the code displyed on the screen of your Boxee Box: ")
     
     client.callMethod("Device.PairResponse", {'deviceid': "9001", 'code': code})
