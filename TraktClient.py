@@ -3,6 +3,7 @@
 import simplejson as json
 import urllib
 import logging
+import time
 
 from hashlib import sha1
 
@@ -15,7 +16,10 @@ class TraktClient(object):
         
         self.log.debug("TraktClient logger initialized")
     
-    def call_method(self, method, data = {}, post=True):
+    def call_method(self, method, data = {}, post=True, retry=3):
+        if (retry == -1):
+            self.log.error("Failed to call method " + method)
+        
         method = method.replace("%API%", self.apikey)
         
         if (post):
@@ -24,14 +28,20 @@ class TraktClient(object):
             
             encoded_data = json.dumps(data);
             
-            logging.debug(encoded_data)
+            self.log.debug(encoded_data)
 
-            stream = urllib.urlopen("http://api.trakt.tv/" + method,
-                                    encoded_data)
-            resp = stream.read()
-            self.log.debug("Response from Trakt: " + resp)
-            
-            return json.loads(resp)
+            try:
+                stream = urllib.urlopen("http://api.trakt.tv/" + method,
+                                        encoded_data)
+                resp = stream.read()
+                self.log.debug("Response from Trakt: " + resp)
+
+                resp = json.loads(resp)
+            except (IOError, JSONDecodeError):
+                self.log.exception("Failed calling method, retrying attempt #" + str(retry - 1) + ".")
+                time.sleep(5)
+                self.call_method(method, data, post, retry - 1)
+                
         else:
             pass #Decisions...
 
