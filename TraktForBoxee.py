@@ -69,7 +69,7 @@ class TraktForBoxee(object):
                     self.trakt_client.cancelWatching()
                     self.watching_now = ""                
             else:
-                boxee_idle = self.boxee_client.getIdle(10)
+                boxee_idle = self.boxee_client.getIdle(300)
                 
                 if (boxee_idle):
                     if (self.watching_now != ""):
