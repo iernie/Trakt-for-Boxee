@@ -115,6 +115,10 @@ class BoxeeBoxClient:
         resp = self.callMethod("System.GetInfoLabels", {'labels': labels}, True);
         return resp["result"]
     
+    def getInfoBooleans(self, booleans):
+        resp = self.callMethod("System.GetInfoBooleans", {'booleans': booleans}, True);
+        return resp["result"]
+    
     def getCurrentlyPlaying(self):
         labels = self.getInfoLabels(['VideoPlayer.Title',
                                      'VideoPlayer.Year',
@@ -168,6 +172,11 @@ class BoxeeBoxClient:
     
     def showNotification(self, notification):
         self.callMethod("GUI.NotificationShow", {"msg": notification}, True)
+    
+    def getIdle(self, idle_time):
+        idle_time = "System.IdleTime(" + str(idle_time) + ")"
+        resp = self.getInfoBooleans([idle_time, "Player.Paused"])
+        return resp[idle_time] and resp["Player.Paused"]
 
 class BoxeeBoxStreamClient(asyncore.dispatcher):
     def __init__(self, device_id, host, port=9090, application_id="pythonclient", application_label="Boxee Box Python Client"):

@@ -37,7 +37,9 @@ class TraktClient(object):
                 self.log.debug("Response from Trakt: " + resp)
 
                 resp = json.loads(resp)
-            except (IOError, JSONDecodeError):
+                if ("error" in resp):
+                    raise TraktError(resp["error"])
+            except (IOError, json.JSONDecodeError):
                 self.log.exception("Failed calling method, retrying attempt #" + str(retry - 1) + ".")
                 time.sleep(5)
                 self.call_method(method, data, post, retry - 1)
@@ -72,3 +74,7 @@ class TraktClient(object):
     def cancelWatching(self):
         self.call_method("show/cancelwatching/%API%")
         self.call_method("movie/cancelwatching/%API%")
+
+class TraktError(Exception):
+    def __init__(self, msg):
+        self.msg = msg
