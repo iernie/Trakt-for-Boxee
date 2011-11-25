@@ -16,7 +16,7 @@ class TraktForBoxee(object):
     
     def __init__(self):
         logging.basicConfig(format="%(asctime)s::%(name)s::%(levelname)s::%(message)s",
-                            level=logging.INFO,
+                            level=logging.DEBUG,
                             stream=sys.stdout)
         
         self.log = logging.getLogger("TraktForBoxee")
@@ -53,92 +53,101 @@ class TraktForBoxee(object):
         
         self.scrobbled = False
         self.watching_now = ""
+        self.timer = 0
     
     def run(self):
-        timer = 0
         while (True):
-            timer += TIMER_INTERVAL
-            status = self.boxee_client.getCurrentlyPlaying()
-            
-            tv = status["type"] == "tv"
-            
-            if (status["type"] == "none"):
-                self.log.debug("Boxee not playing anything, sleep.")
-                if (self.watching_now != ""):
-                    self.log.info("We were just watching something, canceling our watching status on Trakt.tv")
-                    self.trakt_client.cancelWatching()
-                    self.watching_now = ""                
-            else:
-                boxee_idle = self.boxee_client.getIdle(300)
-                
-                if (boxee_idle):
-                    if (self.watching_now != ""):
-                        self.log.info("Boxee is idle, cancelling watching status.")
-                        self.watching_now = ""
-                        self.trakt_client.cancelWatching()
-                else:
-                    watching_now = (status["title"] + status["year"] +
-                                    status["episode"] + status["season"] +
-                                    status["episode_title"] + str(status["duration"]))
-                    if (self.watching_now != watching_now):
-                        self.watching_now = watching_now
-                        self.scrobbled = False
-                        self.log.debug("Now watching something else, canceling previous watching status.")
-                        self.trakt_client.cancelWatching()
-                        timer = 900 #Set watching first round through please
-                    
-                    if ((tv and not self.SCROBBLE_TV) or
-                        (not tv and not self.SCROBBLE_MOVIE)):
-                        self.log.info("Set to ignore this media type, doing so.")
-                    else:
-                        if (status["percentage"] >= 90
-                            and not self.scrobbled):
-                                self.log.info("Scrobbling to Trakt")
-                                if (self.NOTIFY_BOXEE):
-                                    self.boxee_client.showNotification("Scrobbling to Trakt!")
-                                
-                                try:
-                                    self.trakt_client.update_media_status(status["title"],
-                                                                          status["year"],
-                                                                          status["duration"],
-                                                                          status["percentage"],
-                                                                          VERSION,
-                                                                          BOXEE_VERSION,
-                                                                          BOXEE_DATE,
-                                                                          tv=tv,
-                                                                          scrobble=True,
-                                                                          season=status["season"],
-                                                                          episode=status["episode"])
-                                    self.scrobbled = True
-                                except TraktClient.TraktError, (e):
-                                    self.log.error("An error occurred while trying to scrobble: " + e.msg)
-                                
-                        elif (status["percentage"] < 90
-                              and not self.scrobbled
-                              and timer >= 900):
-                            self.log.info("Watching on Trakt")
-                            timer = 0
-                        
-                            try:
-                                self.trakt_client.update_media_status(status["title"],
-                                                                      status["year"],
-                                                                      status["duration"],
-                                                                      status["percentage"],
-                                                                      VERSION,
-                                                                      BOXEE_VERSION,
-                                                                      BOXEE_DATE,
-                                                                      tv=tv,
-                                                                      season=status["season"],
-                                                                      episode=status["episode"])
-                                
-                                if (self.NOTIFY_BOXEE):
-                                    self.boxee_client.showNotification("Watching on Trakt!")
-                            except TraktClient.TraktError, (e):
-                                timer = 870
-                                self.log.error("An error occurred while trying to mark watching: " + e.msg)
-                
-            self.log.debug("NOT SCROBBLING... " + str(timer))
+            self.timer += TIMER_INTERVAL
+            self.main()
             time.sleep(TIMER_INTERVAL)
+    
+    def main(self):
+        status = self.boxee_client.getCurrentlyPlaying()
+        boxee_idle = self.boxee_client.getIdle(300)
+        tv = (status["type"] == "tv")
+        
+        if (status["type"] == "none"):
+            self.log.debug("Boxee not playing anything, sleep.")
+            self.clearWatching()
+            return
+        
+        if (boxee_idle):
+            self.clearWatching("Boxee is idle")
+            return
+        
+        watching_now = (status["title"] + status["year"] +
+                        status["episode"] + status["season"] +
+                        status["episode_title"] + str(status["duration"]))
+        
+        if (self.watching_now != watching_now):
+            self.clearWatching()
+            self.watching_now = watching_now
+            self.scrobbled = False
+            self.log.info("Boxee watching something.")
+            self.timer = 900 #Set watching first round through please
+        
+        if ((tv and not self.SCROBBLE_TV) or
+            (not tv and not self.SCROBBLE_MOVIE)):
+            self.log.info("Watching something but set to ignore media type, " +
+                          "not scrobbling.")
+            return
+        
+        if (status["percentage"] >= 90
+            and not self.scrobbled):
+                self.log.info("Scrobbling to Trakt")
+                if (self.NOTIFY_BOXEE):
+                    self.boxee_client.showNotification("Scrobbling to Trakt!")
+                
+                try:
+                    self.trakt_client.update_media_status(status["title"],
+                                                          status["year"],
+                                                          status["duration"],
+                                                          status["percentage"],
+                                                          VERSION,
+                                                          BOXEE_VERSION,
+                                                          BOXEE_DATE,
+                                                          tv=tv,
+                                                          scrobble=True,
+                                                          season=status["season"],
+                                                          episode=status["episode"])
+                    self.scrobbled = True
+                except TraktClient.TraktError, (e):
+                    self.log.error("An error occurred while trying to scrobble: " + e.msg)
+                
+        elif (status["percentage"] < 90
+              and not self.scrobbled
+              and self.timer >= 900):
+            self.log.info("Watching on Trakt")
+            self.timer = 0
+        
+            try:
+                self.trakt_client.update_media_status(status["title"],
+                                                      status["year"],
+                                                      status["duration"],
+                                                      status["percentage"],
+                                                      VERSION,
+                                                      BOXEE_VERSION,
+                                                      BOXEE_DATE,
+                                                      tv=tv,
+                                                      season=status["season"],
+                                                      episode=status["episode"])
+                
+                if (self.NOTIFY_BOXEE):
+                    self.boxee_client.showNotification("Watching on Trakt!")
+            except TraktClient.TraktError, (e):
+                self.timer = 870
+                self.log.error("An error occurred while trying to mark watching: " + e.msg)
+            
+        self.log.debug("Timer: " + str(self.timer))
+        
+    def clearWatching(self, msg=""):
+        if (self.watching_now == ""):
+            return
+        if (msg != ""):
+            self.log.info(msg)
+        self.log.info("Clearing Trakt watching status.")
+        self.trakt_client.cancelWatching()
+        self.watching_now = ""
 
 def pair():
     config = ConfigParser.RawConfigParser()
