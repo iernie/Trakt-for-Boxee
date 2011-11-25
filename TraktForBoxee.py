@@ -7,54 +7,56 @@ import TraktClient
 import sys
 import time
 import re
+import os
+import getopt
 
 VERSION = "1.0"
 BOXEE_VERSION = BOXEE_DATE = ""
 TIMER_INTERVAL = 10
 
 class TraktForBoxee(object):
-    
+
     def __init__(self):
         logging.basicConfig(format="%(asctime)s::%(name)s::%(levelname)s::%(message)s",
                             level=logging.DEBUG,
                             stream=sys.stdout)
-        
+
         self.log = logging.getLogger("TraktForBoxee")
         self.log.info("Initialized Trakt for Boxee.")
-        
+
         self.config = ConfigParser.RawConfigParser()
         self.config.read(sys.path[0] + "/settings.cfg")
-        
+
         boxee_ip = self.config.get("Boxee", "IP")
         boxee_port = self.config.getint("Boxee", "Port")
-        
+
         self.boxee_client = boxeeboxclient.BoxeeBoxClient("9001",
                                                           boxee_ip,
                                                           boxee_port,
                                                           "traktforboxee",
                                                           "Trakt for Boxee")
-        
+
         trakt_api = "f46fbebb833fbeb8196b69e0e8d5de8f852b7ea6"
         trakt_username = self.config.get("Trakt", "Username")
         trakt_password = self.config.get("Trakt", "Password")
-        
+
         self.trakt_client = TraktClient.TraktClient(trakt_api,
                                                     trakt_username,
                                                     trakt_password)
-        
+
         build_info = self.boxee_client.getInfoLabels(["System.BuildVersion",
                                                       "System.BuildDate"])
         BOXEE_VERSION = build_info["System.BuildVersion"]
         BOXEE_DATE = build_info["System.BuildDate"]
-        
+
         self.SCROBBLE_TV = self.config.getboolean("TraktForBoxee", "ScrobbleTV")
         self.SCROBBLE_MOVIE = self.config.getboolean("TraktForBoxee", "ScrobbleMovie")
         self.NOTIFY_BOXEE = self.config.getboolean("TraktForBoxee", "NotifyBoxee")
-        
+
         self.scrobbled = False
         self.watching_now = ""
         self.timer = 0
-    
+
     def run(self):
         while (True):
             self.timer += TIMER_INTERVAL
@@ -149,13 +151,42 @@ class TraktForBoxee(object):
         self.trakt_client.cancelWatching()
         self.watching_now = ""
 
+def daemonize():
+
+    # Make a non-session-leader child process
+        try:
+            pid = os.fork() #@UndefinedVariable - only available in UNIX
+            if pid != 0:
+                sys.exit(0)
+        except OSError, e:
+            raise RuntimeError("1st fork failed: %s [%d]" %
+                       (e.strerror, e.errno))
+
+        os.setsid() #@UndefinedVariable - only available in UNIX
+
+        # Make sure I can read my own files and shut out others
+        prev = os.umask(0)
+        os.umask(prev and int('077', 8))
+
+        # Make the child a session-leader by detaching from the terminal
+        try:
+            pid = os.fork() #@UndefinedVariable - only available in UNIX
+            if pid != 0:
+                sys.exit(0)
+        except OSError, e:
+            raise RuntimeError("2st fork failed: %s [%d]" %
+                       (e.strerror, e.errno))
+
+        dev_null = file('/dev/null', 'r')
+        os.dup2(dev_null.fileno(), sys.stdin.fileno())
+
 def pair():
     config = ConfigParser.RawConfigParser()
     config.read(sys.path[0] + "/settings.cfg")
-    
+
     ip = config.get("Boxee", "IP")
     port = config.get("Boxee", "Port")
-    
+
     client = boxeeboxclient.BoxeeBoxClient("9001", ip, int(port), "traktforboxee",
                                            "Trakt for Boxee")
     client.callMethod("Device.PairChallenge", {'deviceid': "9001",
@@ -163,21 +194,42 @@ def pair():
                                                'label': client.application_label,
                                                'icon': "http://dir.boxee.tv/apps/workbench/images/thumb.png",
                                                'type': 'other'})
-    
+
     pattern = re.compile("^[0-9]{4}$")
-    
+
     code = False
     while (not code or pattern.match(code) is None):
         code = raw_input("Enter the code displyed on the screen of your Boxee Box: ")
-    
+
     client.callMethod("Device.PairResponse", {'deviceid': "9001", 'code': code})
     print "You are now ready to scrobble to Trakt.tv."
 
 if __name__ == '__main__':
-    args = sys.argv
-    if (len(args) > 1):
-        if (args[1] == "pair"):
-            pair()
-    else:
-        client = TraktForBoxee()
-        client.run()
+    should_pair = should_daemon = False
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "dp", ['daemon', 'pair']) #@UnusedVariable
+    except getopt.GetoptError:
+        print "Available options: --daemon, --pair"
+        sys.exit()
+
+    for o, a in opts:
+        # Pair to the Boxee box
+        if o in ('-p', '--pair'):
+            should_pair = True
+
+        # Run as a daemon
+        if o in ('-d', '--daemon'):
+            if sys.platform == 'win32':
+                print "Daemonize not supported under Windows, starting normally"
+            else:
+                should_daemon = True
+
+    if should_pair:
+        pair()
+
+    if should_daemon:
+        daemonize()
+
+    client = TraktForBoxee()
+    client.run()
