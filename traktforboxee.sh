@@ -1,4 +1,5 @@
 #!/bin/sh
+# by iernie@github
 
 # CONFIG
 HOMEPATH=/c/.traktforboxee
