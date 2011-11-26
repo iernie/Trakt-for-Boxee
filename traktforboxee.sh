@@ -23,7 +23,7 @@ stop() {
         echo "TraktForBoxee is not running."
     else
         echo "Stopping TraktForBoxee..."
-        python $SCRIPT --daemon
+        kill `cat $PIDFILE`
         rm $PIDFILE
         echo "TraktForBoxee stopped."
     fi
