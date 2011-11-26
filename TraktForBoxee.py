@@ -55,97 +55,9 @@ class TraktForBoxee(object):
 
         self.scrobbled = False
         self.watching_now = ""
-<<<<<<< HEAD
-=======
         self.timer = 0
->>>>>>> parent of 7ea9e6a... Revert 3b0770fc9f4ce865bb78c8ddc7b33046c11d6660^..HEAD
-
     def run(self):
         while (True):
-<<<<<<< HEAD
-            timer += TIMER_INTERVAL
-            status = self.boxee_client.getCurrentlyPlaying()
-
-            tv = status["type"] == "tv"
-
-            if (status["type"] == "none"):
-                self.log.debug("Boxee not playing anything, sleep.")
-                if (self.watching_now != ""):
-                    self.log.info("We were just watching something, canceling our watching status on Trakt.tv")
-                    self.trakt_client.cancelWatching()
-                    self.watching_now = ""
-            else:
-                boxee_idle = self.boxee_client.getIdle(300)
-
-                if (boxee_idle):
-                    if (self.watching_now != ""):
-                        self.log.info("Boxee is idle, cancelling watching status.")
-                        self.watching_now = ""
-                        self.trakt_client.cancelWatching()
-                else:
-                    watching_now = (status["title"] + status["year"] +
-                                    status["episode"] + status["season"] +
-                                    status["episode_title"] + str(status["duration"]))
-                    if (self.watching_now != watching_now):
-                        self.watching_now = watching_now
-                        self.scrobbled = False
-                        self.log.debug("Now watching something else, canceling previous watching status.")
-                        self.trakt_client.cancelWatching()
-                        timer = 900 #Set watching first round through please
-
-                    if ((tv and not self.SCROBBLE_TV) or
-                        (not tv and not self.SCROBBLE_MOVIE)):
-                        self.log.info("Set to ignore this media type, doing so.")
-                    else:
-                        if (status["percentage"] >= 90
-                            and not self.scrobbled):
-                                self.log.info("Scrobbling to Trakt")
-                                if (self.NOTIFY_BOXEE):
-                                    self.boxee_client.showNotification("Scrobbling to Trakt!")
-
-                                try:
-                                    self.trakt_client.update_media_status(status["title"],
-                                                                          status["year"],
-                                                                          status["duration"],
-                                                                          status["percentage"],
-                                                                          VERSION,
-                                                                          BOXEE_VERSION,
-                                                                          BOXEE_DATE,
-                                                                          tv=tv,
-                                                                          scrobble=True,
-                                                                          season=status["season"],
-                                                                          episode=status["episode"])
-                                    self.scrobbled = True
-                                except TraktClient.TraktError, (e):
-                                    self.log.error("An error occurred while trying to scrobble: " + e.msg)
-
-                        elif (status["percentage"] < 90
-                              and not self.scrobbled
-                              and timer >= 900):
-                            self.log.info("Watching on Trakt")
-                            timer = 0
-
-                            try:
-                                self.trakt_client.update_media_status(status["title"],
-                                                                      status["year"],
-                                                                      status["duration"],
-                                                                      status["percentage"],
-                                                                      VERSION,
-                                                                      BOXEE_VERSION,
-                                                                      BOXEE_DATE,
-                                                                      tv=tv,
-                                                                      season=status["season"],
-                                                                      episode=status["episode"])
-
-                                if (self.NOTIFY_BOXEE):
-                                    self.boxee_client.showNotification("Watching on Trakt!")
-                            except TraktClient.TraktError, (e):
-                                timer = 870
-                                self.log.error("An error occurred while trying to mark watching: " + e.msg)
-
-            self.log.debug("NOT SCROBBLING... " + str(timer))
-            time.sleep(TIMER_INTERVAL)
-=======
             self.timer += TIMER_INTERVAL
             self.main()
             time.sleep(TIMER_INTERVAL)
@@ -266,7 +178,6 @@ def daemonize():
 
         dev_null = file('/dev/null', 'r')
         os.dup2(dev_null.fileno(), sys.stdin.fileno())
->>>>>>> parent of 7ea9e6a... Revert 3b0770fc9f4ce865bb78c8ddc7b33046c11d6660^..HEAD
 
 def daemonize():
 
@@ -322,12 +233,7 @@ def pair():
     print "You are now ready to scrobble to Trakt.tv."
 
 if __name__ == '__main__':
-<<<<<<< HEAD
-    Pair = False
-    Daemon = False
-=======
     should_pair = should_daemon = False
->>>>>>> parent of 7ea9e6a... Revert 3b0770fc9f4ce865bb78c8ddc7b33046c11d6660^..HEAD
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "dp", ['daemon', 'pair']) #@UnusedVariable
@@ -338,33 +244,19 @@ if __name__ == '__main__':
     for o, a in opts:
         # Pair to the Boxee box
         if o in ('-p', '--pair'):
-<<<<<<< HEAD
-            Pair = True
-=======
             should_pair = True
->>>>>>> parent of 7ea9e6a... Revert 3b0770fc9f4ce865bb78c8ddc7b33046c11d6660^..HEAD
 
         # Run as a daemon
         if o in ('-d', '--daemon'):
             if sys.platform == 'win32':
                 print "Daemonize not supported under Windows, starting normally"
             else:
-<<<<<<< HEAD
-                consoleLogging = False
-                Daemon = True
-
-    if Pair:
-        pair()
-
-    if Daemon:
-=======
                 should_daemon = True
 
     if should_pair:
         pair()
 
     if should_daemon:
->>>>>>> parent of 7ea9e6a... Revert 3b0770fc9f4ce865bb78c8ddc7b33046c11d6660^..HEAD
         daemonize()
 
     client = TraktForBoxee()
