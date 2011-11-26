@@ -174,7 +174,17 @@ def pair():
     client.callMethod("Device.PairResponse", {'deviceid': "9001", 'code': code})
     print "You are now ready to scrobble to Trakt.tv."
     
+def save_pid():
+    pid = os.fork()
+    if pid != 0:        
+        pid_file = open('TraktForBoxee.pid',  'w')
+        pid += 1
+        pid_file.write(str(pid))
+        pid_file.close()
+    
 def daemonize():
+    save_pid()
+    
     # Make a non-session-leader child process
     try:
         pid = os.fork() #@UndefinedVariable - only available in UNIX
