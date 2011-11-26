@@ -18,7 +18,7 @@ class TraktForBoxee(object):
 
     def __init__(self):
         logging.basicConfig(format="%(asctime)s::%(name)s::%(levelname)s::%(message)s",
-                            level=logging.DEBUG,
+                            level=logging.INFO,
                             stream=sys.stdout)
 
         self.log = logging.getLogger("TraktForBoxee")
