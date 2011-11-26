@@ -150,64 +150,6 @@ class TraktForBoxee(object):
         self.trakt_client.cancelWatching()
         self.watching_now = ""
 
-def daemonize():
-
-    # Make a non-session-leader child process
-        try:
-            pid = os.fork() #@UndefinedVariable - only available in UNIX
-            if pid != 0:
-                sys.exit(0)
-        except OSError, e:
-            raise RuntimeError("1st fork failed: %s [%d]" %
-                       (e.strerror, e.errno))
-
-        os.setsid() #@UndefinedVariable - only available in UNIX
-
-        # Make sure I can read my own files and shut out others
-        prev = os.umask(0)
-        os.umask(prev and int('077', 8))
-
-        # Make the child a session-leader by detaching from the terminal
-        try:
-            pid = os.fork() #@UndefinedVariable - only available in UNIX
-            if pid != 0:
-                sys.exit(0)
-        except OSError, e:
-            raise RuntimeError("2st fork failed: %s [%d]" %
-                       (e.strerror, e.errno))
-
-        dev_null = file('/dev/null', 'r')
-        os.dup2(dev_null.fileno(), sys.stdin.fileno())
-
-def daemonize():
-
-    # Make a non-session-leader child process
-        try:
-            pid = os.fork() #@UndefinedVariable - only available in UNIX
-            if pid != 0:
-                sys.exit(0)
-        except OSError, e:
-            raise RuntimeError("1st fork failed: %s [%d]" %
-                       (e.strerror, e.errno))
-
-        os.setsid() #@UndefinedVariable - only available in UNIX
-
-        # Make sure I can read my own files and shut out others
-        prev = os.umask(0)
-        os.umask(prev and int('077', 8))
-
-        # Make the child a session-leader by detaching from the terminal
-        try:
-            pid = os.fork() #@UndefinedVariable - only available in UNIX
-            if pid != 0:
-                sys.exit(0)
-        except OSError, e:
-            raise RuntimeError("2st fork failed: %s [%d]" %
-                       (e.strerror, e.errno))
-
-        dev_null = file('/dev/null', 'r')
-        os.dup2(dev_null.fileno(), sys.stdin.fileno())
-
 def pair():
     config = ConfigParser.RawConfigParser()
     config.read(sys.path[0] + "/settings.cfg")
@@ -231,6 +173,34 @@ def pair():
 
     client.callMethod("Device.PairResponse", {'deviceid': "9001", 'code': code})
     print "You are now ready to scrobble to Trakt.tv."
+    
+def daemonize():
+    # Make a non-session-leader child process
+    try:
+        pid = os.fork() #@UndefinedVariable - only available in UNIX
+        if pid != 0:
+            sys.exit(0)
+    except OSError, e:
+        raise RuntimeError("1st fork failed: %s [%d]" %
+                   (e.strerror, e.errno))
+
+    os.setsid() #@UndefinedVariable - only available in UNIX
+
+    # Make sure I can read my own files and shut out others
+    prev = os.umask(0)
+    os.umask(prev and int('077', 8))
+
+    # Make the child a session-leader by detaching from the terminal
+    try:
+        pid = os.fork() #@UndefinedVariable - only available in UNIX
+        if pid != 0:
+            sys.exit(0)
+    except OSError, e:
+        raise RuntimeError("2st fork failed: %s [%d]" %
+                   (e.strerror, e.errno))
+
+    dev_null = file('/dev/null', 'r')
+    os.dup2(dev_null.fileno(), sys.stdin.fileno())
 
 if __name__ == '__main__':
     should_pair = should_daemon = False
