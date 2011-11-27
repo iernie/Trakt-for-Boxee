@@ -1,20 +1,27 @@
 #!/bin/sh
 # by iernie@github
 
-# CONFIG
-HOMEPATH=/c/.traktforboxee
+####### START EDIT ME ########
 
-# # # #
+PYTHON_PATH=/usr/bin/python
+APP_PATH=/c/.traktforboxee
+RUN_AS=admin
 
-SCRIPT=${HOMEPATH}/TraktForBoxee.py
-PIDFILE=${HOMEPATH}/TraktForBoxee.pid
+####### END EDIT ME ##########
+
+SCRIPT=${APP_PATH}/TraktForBoxee.py
+PIDFILE=${APP_PATH}/TraktForBoxee.pid
+
+chown -R ${RUN_AS}:${RUN_AS} ${APP_PATH}
+chmod -R 755 ${APP_PATH}
+
 
 start() {
     if [[ -f $PIDFILE ]]; then
         echo "TraktForBoxee is already running."
     else
         echo "Starting TraktForBoxee..."
-        python $SCRIPT --daemon
+        $PYTHON_PATH $SCRIPT --daemon
         echo "TraktForBoxee started."
     fi
 }
