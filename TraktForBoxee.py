@@ -174,7 +174,20 @@ def pair():
     client.callMethod("Device.PairResponse", {'deviceid': "9001", 'code': code})
     print "You are now ready to scrobble to Trakt.tv."
     
-def daemonize():
+def daemonize(pidfile=""):
+    """
+    Forks the process off to run as a daemon. Most of this code is from the
+    sickbeard project.
+    """
+    
+    if (pidfile):
+        if os.path.exists(pidfile):
+            sys.exit("The pidfile " + pidfile + " already exists, Trakt for Boxee make still be running.")
+        try:
+            file(sickbeard.PIDFILE, 'w').write("pid\n")
+        except IOError, e:
+            sys.exit("Unable to write PID file: %s [%d]" % (e.strerror, e.errno))
+            
     # Make a non-session-leader child process
     try:
         pid = os.fork() #@UndefinedVariable - only available in UNIX
@@ -204,6 +217,7 @@ def daemonize():
 
 if __name__ == '__main__':
     should_pair = should_daemon = False
+    pidfile = ""
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "dp", ['daemon', 'pair']) #@UnusedVariable
@@ -222,12 +236,17 @@ if __name__ == '__main__':
                 print "Daemonize not supported under Windows, starting normally"
             else:
                 should_daemon = True
+        
+        if o in ("--pidfile"):
+            pidfile = str(a)
 
     if should_pair:
         pair()
 
     if should_daemon:
-        daemonize()
+        daemonize(pidfile)
+    elif (pidfile):
+        print "Pidfiles aren't useful when not running as a daemon, ignoring pidfile arg."
 
     client = TraktForBoxee()
     client.run()
