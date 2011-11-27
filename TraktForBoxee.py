@@ -184,7 +184,7 @@ def daemonize():
     try:
         pid = os.fork() #@UndefinedVariable - only available in UNIX
         if pid != 0:
-            save_pid(pid)
+            #save_pid(pid)
             sys.exit(0)
     except OSError, e:
         raise RuntimeError("1st fork failed: %s [%d]" %
@@ -200,7 +200,7 @@ def daemonize():
     try:
         pid = os.fork() #@UndefinedVariable - only available in UNIX
         if pid != 0:
-            save_pid(pid)
+            #save_pid(pid)
             sys.exit(0)
     except OSError, e:
         raise RuntimeError("2nd fork failed: %s [%d]" %
@@ -208,6 +208,9 @@ def daemonize():
 
     dev_null = file('/dev/null', 'r')
     os.dup2(dev_null.fileno(), sys.stdin.fileno())
+    
+    # Save pid to file
+    file("TraktForBoxee.pid", "w").write("%s\n" % str(os.getpid()))
 
 if __name__ == '__main__':
     should_pair = should_daemon = False
