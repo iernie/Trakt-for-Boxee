@@ -17,7 +17,7 @@ PID_FILE=/var/run/traktforboxee.pid
 APP_NAME="TraktForBoxee.py"
 
 # Default startup args
-DEFAULT_OPTS="--daemon --pidfile $PID_FILE"
+DEFAULT_OPTS="--daemon"
 
 # user
 RUN_AS=admin
