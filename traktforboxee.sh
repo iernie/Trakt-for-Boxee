@@ -3,43 +3,44 @@
 
 ####### START EDIT ME ########
 
-PYTHON_PATH=/usr/bin/python
+# Path to app
 APP_PATH=/c/.traktforboxee
+
+# Path to python bin
+DAEMON=/usr/bin/python
+
+# path to pid file
+# Make sure this path has write permissions
+PID_FILE=/var/run/traktforboxee.pid
+
+# Name of app file
+APP_NAME="TraktForBoxee.py"
+
+# Default startup args
+DEFAULT_OPTS="--daemon"
+
+# user
 RUN_AS=admin
 
 ####### END EDIT ME ##########
 
-SCRIPT=${APP_PATH}/TraktForBoxee.py
-PIDFILE=${APP_PATH}/TraktForBoxee.pid
-
-chown -R ${RUN_AS}:${RUN_AS} ${APP_PATH}
-chmod -R 755 ${APP_PATH}
+test -x $DAEMON || exit 0
 
 
 start() {
-    if [[ -f $PIDFILE ]]; then
-        echo "TraktForBoxee is already running."
-    else
-        echo "Starting TraktForBoxee..."
-        $PYTHON_PATH $SCRIPT --daemon
-        echo "TraktForBoxee started."
-    fi
+    echo "Starting TraktForBoxee..."
+    start-stop-daemon -d $APP_PATH -c $RUN_AS --start --background --pidfile $PID_FILE --make-pidfile --exec $DAEMON $APP_NAME -- $DEFAULT_OPTS
 }
 
 stop() {
-    if ! [[ -f $PIDFILE ]]; then
-        echo "TraktForBoxee is not running."
-    else
-        echo "Stopping TraktForBoxee..."
-        kill `cat $PIDFILE`
-        rm $PIDFILE
-        echo "TraktForBoxee stopped."
-    fi
+    echo "Stopping TraktForBoxee..."
+    start-stop-daemon --stop --pidfile $PID_FILE
 }
 
 pair() {
     echo "Starting pairing..."
-    python $SCRIPT --pair
+    cd $APP_PATH
+    $DAEMON $APP_NAME --pair
 }
 
 case "$1" in
@@ -51,7 +52,6 @@ case "$1" in
     ;;
     restart)
         stop
-        sleep 2
         start
     ;;
     pair)
