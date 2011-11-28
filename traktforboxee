@@ -29,12 +29,14 @@ test -x $DAEMON || exit 0
 
 start() {
     echo "Starting TraktForBoxee..."
-    start-stop-daemon -d $APP_PATH -c $RUN_AS --start --background --pidfile $PID_FILE --exec $DAEMON $APP_NAME -- $DEFAULT_OPTS
+    start-stop-daemon --quiet -d $APP_PATH -c $RUN_AS --start --pidfile $PID_FILE --exec $DAEMON $APP_NAME -- $DEFAULT_OPTS<                                                                                                                
+    pgrep -f -x -n -u $RUN_AS "$DAEMON $APP_NAME $DEFAULT_OPTS" > $PID_FILE
 }
 
 stop() {
     echo "Stopping TraktForBoxee..."
     start-stop-daemon --stop --pidfile $PID_FILE
+    rm $PID_FILE
 }
 
 pair() {
