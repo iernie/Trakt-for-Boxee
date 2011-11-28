@@ -174,17 +174,11 @@ def pair():
     client.callMethod("Device.PairResponse", {'deviceid': "9001", 'code': code})
     print "You are now ready to scrobble to Trakt.tv."
     
-def save_pid(pid):     
-    pid_file = open('TraktForBoxee.pid',  'w')
-    pid_file.write(str(pid))
-    pid_file.close()
-    
 def daemonize():
     # Make a non-session-leader child process
     try:
         pid = os.fork() #@UndefinedVariable - only available in UNIX
         if pid != 0:
-            #save_pid(pid)
             sys.exit(0)
     except OSError, e:
         raise RuntimeError("1st fork failed: %s [%d]" %
@@ -200,7 +194,6 @@ def daemonize():
     try:
         pid = os.fork() #@UndefinedVariable - only available in UNIX
         if pid != 0:
-            #save_pid(pid)
             sys.exit(0)
     except OSError, e:
         raise RuntimeError("2nd fork failed: %s [%d]" %
