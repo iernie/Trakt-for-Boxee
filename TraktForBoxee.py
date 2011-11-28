@@ -14,6 +14,9 @@ VERSION = "1.0"
 BOXEE_VERSION = BOXEE_DATE = ""
 TIMER_INTERVAL = 10
 
+PID_PATH = ""
+CREATE_PID = False
+
 class TraktForBoxee(object):
 
     def __init__(self):
@@ -202,16 +205,20 @@ def daemonize():
     dev_null = file('/dev/null', 'r')
     os.dup2(dev_null.fileno(), sys.stdin.fileno())
     
-    # Save pid to file
-    file("TraktForBoxee.pid", "w").write("%s\n" % str(os.getpid()))
-
+    # Save pid to file if specified
+    if CREATE_PID:
+        write_pid(os.getpid())
+    
+def write_pid(pid):
+    file(PID_PATH, "w").write("%s\n" % str(pid))
+    
 if __name__ == '__main__':
     should_pair = should_daemon = False
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "dp", ['daemon', 'pair']) #@UnusedVariable
+        opts, args = getopt.getopt(sys.argv[1:], "dp", ['daemon', 'pair', 'pidfile=']) #@UnusedVariable
     except getopt.GetoptError:
-        print "Available options: --daemon, --pair"
+        print "Available options: --daemon, --pair, --pidfile"
         sys.exit()
 
     for o, a in opts:
@@ -225,6 +232,20 @@ if __name__ == '__main__':
                 print "Daemonize not supported under Windows, starting normally"
             else:
                 should_daemon = True
+                
+        # Create pid file
+        if o in ('--pidfile',):
+            PID_PATH = str(a)
+            
+            if os.path.exists(PID_PATH):
+                sys.exit("PID already exists. Exiting...")
+            
+            if should_daemon:
+                CREATE_PID = True
+                try:
+                    write_pid(0)
+                except IOError, e:
+                    raise SystemExit("Unable to write PID file: %s [%d]" % (e.strerror, e.errno))
 
     if should_pair:
         pair()
