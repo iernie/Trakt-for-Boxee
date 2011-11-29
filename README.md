@@ -15,10 +15,10 @@ Getting setup with Trakt For Boxee is fairly straight foward, just follow the st
 
 Startup script
 --------------
-1. Copy or move 'traktforboxee' file to your startup folder (usually '/etc/init.d/' depending on your system)
-2. Make the file executable with 'chmod a+x /etc/init.d/traktforboxee'
+1. Copy or move 'init.traktforboxee' file to your startup folder (usually '/etc/init.d/' depending on your system)
+2. Make the file executable with 'chmod a+x /etc/init.d/init.traktforboxee'
 3. Edit file and change the variables to match your system
-4. Add script to startup by running 'update-rc.d traktforboxee defaults'
+4. Add script to startup by running 'update-rc.d init.traktforboxee defaults'
 
 Updating
 --------
