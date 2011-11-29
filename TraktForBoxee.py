@@ -16,9 +16,10 @@ TIMER_INTERVAL = 10
 
 class TraktForBoxee(object):
 
-    def __init__(self):
+    def __init__(self, file_logging=False):
         logging.basicConfig(format="%(asctime)s::%(name)s::%(levelname)s::%(message)s",
-                            level=logging.DEBUG,
+                            level=logging.INFO,
+                            filename=file_logging,
                             stream=sys.stdout)
 
         self.log = logging.getLogger("TraktForBoxee")
@@ -56,10 +57,16 @@ class TraktForBoxee(object):
         self.scrobbled = False
         self.watching_now = ""
         self.timer = 0
+
     def run(self):
         while (True):
             self.timer += TIMER_INTERVAL
-            self.main()
+            try:
+                self.main()
+            except boxeeboxclient.BoxeeClientException, e:
+                self.log.warning("An error occurred while communicating with the Boxee Box.")
+            except Exception, e:
+                self.log.warning("An unknown error occurred.")
             time.sleep(TIMER_INTERVAL)
     
     def main(self):
@@ -182,7 +189,7 @@ def daemonize(pidfile=""):
     
     if (pidfile):
         if os.path.exists(pidfile):
-            sys.exit("The pidfile " + pidfile + " already exists, Trakt for Boxee make still be running.")
+            sys.exit("The pidfile " + pidfile + " already exists, Trakt for Boxee may still be running.")
         try:
             file(sickbeard.PIDFILE, 'w').write("pid\n")
         except IOError, e:
@@ -214,6 +221,9 @@ def daemonize(pidfile=""):
 
     dev_null = file('/dev/null', 'r')
     os.dup2(dev_null.fileno(), sys.stdin.fileno())
+    
+    if (pidfile):
+        file(pidfile, "w").write("%s\n" % str(os.getpid()))
 
 if __name__ == '__main__':
     should_pair = should_daemon = False
@@ -222,7 +232,7 @@ if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:], "dp", ['daemon', 'pair']) #@UnusedVariable
     except getopt.GetoptError:
-        print "Available options: --daemon, --pair"
+        print "Available options: --daemon, --pair, --pidfile"
         sys.exit()
 
     for o, a in opts:
@@ -246,7 +256,7 @@ if __name__ == '__main__':
     if should_daemon:
         daemonize(pidfile)
     elif (pidfile):
-        print "Pidfiles aren't useful when not running as a daemon, ignoring pidfile arg."
+        print "Pidilfe isn't useful when not running as a daemon, ignoring pidfile."
 
-    client = TraktForBoxee()
+    client = TraktForBoxee("TraktForBoxee.log" if should_daemon else False)
     client.run()
