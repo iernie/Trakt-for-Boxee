@@ -191,7 +191,7 @@ def daemonize(pidfile=""):
         if os.path.exists(pidfile):
             sys.exit("The pidfile " + pidfile + " already exists, Trakt for Boxee may still be running.")
         try:
-            file(sickbeard.PIDFILE, 'w').write("pid\n")
+            file(pidfile, 'w').write("pid\n")
         except IOError, e:
             sys.exit("Unable to write PID file: %s [%d]" % (e.strerror, e.errno))
             
@@ -249,19 +249,6 @@ if __name__ == '__main__':
                 
         # Create pid file
         if o in ('--pidfile',):
-            PID_PATH = str(a)
-            
-            if os.path.exists(PID_PATH):
-                sys.exit("PID already exists. Exiting...")
-            
-            if should_daemon:
-                CREATE_PID = True
-                try:
-                    write_pid(0)
-                except IOError, e:
-                    raise SystemExit("Unable to write PID file: %s [%d]" % (e.strerror, e.errno))
-
-        if o in ("--pidfile"):
             pidfile = str(a)
 
     if should_pair:
