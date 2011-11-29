@@ -13,9 +13,12 @@ Getting setup with Trakt For Boxee is fairly straight foward, just follow the st
 3. Edit settings_example.cfg approriately, leave the Boxee port if you're unsure, and rename it to settings.cfg (or make a fresh copy if you want).
 4. Pair Trakt For Boxee to your Boxee Box via the command 'python TraktForBoxee.py --pair' in the command line.
 
-Run as Daemon on UNIX
----------------------
-To run Trakt for Boxee as a daemon on a UNIX system just call the command 'python TraktForBoxee.py --daemon'
+Startup script
+--------------
+1. Copy or move 'init.traktforboxee' file to your startup folder (usually '/etc/init.d/' depending on your system)
+2. Make the file executable with 'chmod a+x /etc/init.d/init.traktforboxee'
+3. Edit file and change the variables to match your system
+4. Add script to startup by running 'update-rc.d init.traktforboxee defaults'
 
 Startup script
 --------------

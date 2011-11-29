@@ -14,14 +14,12 @@ VERSION = "1.0"
 BOXEE_VERSION = BOXEE_DATE = ""
 TIMER_INTERVAL = 10
 
-PID_PATH = ""
-CREATE_PID = False
-
 class TraktForBoxee(object):
 
-    def __init__(self):
+    def __init__(self, file_logging=False):
         logging.basicConfig(format="%(asctime)s::%(name)s::%(levelname)s::%(message)s",
                             level=logging.INFO,
+                            filename=file_logging,
                             stream=sys.stdout)
 
         self.log = logging.getLogger("TraktForBoxee")
@@ -59,10 +57,16 @@ class TraktForBoxee(object):
         self.scrobbled = False
         self.watching_now = ""
         self.timer = 0
+
     def run(self):
         while (True):
             self.timer += TIMER_INTERVAL
-            self.main()
+            try:
+                self.main()
+            except boxeeboxclient.BoxeeClientException, e:
+                self.log.warning("An error occurred while communicating with the Boxee Box.")
+            except Exception, e:
+                self.log.warning("An unknown error occurred.")
             time.sleep(TIMER_INTERVAL)
     
     def main(self):
@@ -177,7 +181,20 @@ def pair():
     client.callMethod("Device.PairResponse", {'deviceid': "9001", 'code': code})
     print "You are now ready to scrobble to Trakt.tv."
     
-def daemonize():
+def daemonize(pidfile=""):
+    """
+    Forks the process off to run as a daemon. Most of this code is from the
+    sickbeard project.
+    """
+    
+    if (pidfile):
+        if os.path.exists(pidfile):
+            sys.exit("The pidfile " + pidfile + " already exists, Trakt for Boxee may still be running.")
+        try:
+            file(sickbeard.PIDFILE, 'w').write("pid\n")
+        except IOError, e:
+            sys.exit("Unable to write PID file: %s [%d]" % (e.strerror, e.errno))
+            
     # Make a non-session-leader child process
     try:
         pid = os.fork() #@UndefinedVariable - only available in UNIX
@@ -205,15 +222,12 @@ def daemonize():
     dev_null = file('/dev/null', 'r')
     os.dup2(dev_null.fileno(), sys.stdin.fileno())
     
-    # Save pid to file if specified
-    if CREATE_PID:
-        write_pid(os.getpid())
-    
-def write_pid(pid):
-    file(PID_PATH, "w").write("%s\n" % str(pid))
-    
+    if (pidfile):
+        file(pidfile, "w").write("%s\n" % str(os.getpid()))
+
 if __name__ == '__main__':
     should_pair = should_daemon = False
+    pidfile = ""
 
     try:
         opts, args = getopt.getopt(sys.argv[1:], "dp", ['daemon', 'pair', 'pidfile=']) #@UnusedVariable
@@ -247,11 +261,16 @@ if __name__ == '__main__':
                 except IOError, e:
                     raise SystemExit("Unable to write PID file: %s [%d]" % (e.strerror, e.errno))
 
+        if o in ("--pidfile"):
+            pidfile = str(a)
+
     if should_pair:
         pair()
 
     if should_daemon:
-        daemonize()
+        daemonize(pidfile)
+    elif (pidfile):
+        print "Pidilfe isn't useful when not running as a daemon, ignoring pidfile."
 
-    client = TraktForBoxee()
+    client = TraktForBoxee("TraktForBoxee.log" if should_daemon else False)
     client.run()
