@@ -1,5 +1,15 @@
 #!/bin/sh
-# by iernie@github
+# by iernie
+
+### BEGIN INIT INFO
+# Provides:          TraktForBoxee Instance
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Starts TraktForBoxee service
+# Description:       Starts TraktForBoxee service by start-stop-daemon
+### END INIT INFO
 
 ####### START EDIT ME ########
 

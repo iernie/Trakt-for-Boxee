@@ -19,9 +19,10 @@ To run Trakt for Boxee as a daemon on a UNIX system just call the command 'pytho
 
 Startup script
 --------------
-Copy or move the 'traktforboxee' file to your startup folder. This is usually '/etc/init.d/' depending on your system.
-Make the file executable by running 'chmod a+x traktforboxee'.
-Edit the file and change the variables to match your system. TraktForBoxee should now startup at boot.
+1. Copy or move 'traktforboxee' file to your startup folder (usually '/etc/init.d/' depending on your system)
+2. Make the file executable with 'chmod a+x /etc/init.d/traktforboxee'
+3. Edit file and change the variables to match your system
+4. Add script to startup by running 'update-rc.d traktforboxee defaults'
 
 Updating
 --------
