@@ -216,7 +216,7 @@ def daemonize(pidfile=""):
         if pid != 0:
             sys.exit(0)
     except OSError, e:
-        raise RuntimeError("2st fork failed: %s [%d]" %
+        raise RuntimeError("2nd fork failed: %s [%d]" %
                    (e.strerror, e.errno))
 
     dev_null = file('/dev/null', 'r')
@@ -230,7 +230,7 @@ if __name__ == '__main__':
     pidfile = ""
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "dp", ['daemon', 'pair']) #@UnusedVariable
+        opts, args = getopt.getopt(sys.argv[1:], "dp", ['daemon', 'pair', 'pidfile=']) #@UnusedVariable
     except getopt.GetoptError:
         print "Available options: --daemon, --pair, --pidfile"
         sys.exit()
@@ -246,7 +246,7 @@ if __name__ == '__main__':
                 print "Daemonize not supported under Windows, starting normally"
             else:
                 should_daemon = True
-        
+
         if o in ("--pidfile"):
             pidfile = str(a)
 
