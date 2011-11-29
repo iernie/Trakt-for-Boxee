@@ -20,13 +20,6 @@ Startup script
 3. Edit file and change the variables to match your system
 4. Add script to startup by running 'update-rc.d init.traktforboxee defaults'
 
-Startup script
---------------
-1. Copy or move 'traktforboxee' file to your startup folder (usually '/etc/init.d/' depending on your system)
-2. Make the file executable with 'chmod a+x /etc/init.d/traktforboxee'
-3. Edit file and change the variables to match your system
-4. Add script to startup by running 'update-rc.d traktforboxee defaults'
-
 Updating
 --------
 To update Trakt For Boxee all you have to do is download the [newest version](https://github.com/cold12/Trakt-for-Boxee/zipball/master),
