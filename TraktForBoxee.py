@@ -246,6 +246,20 @@ if __name__ == '__main__':
                 print "Daemonize not supported under Windows, starting normally"
             else:
                 should_daemon = True
+                
+        # Create pid file
+        if o in ('--pidfile',):
+            PID_PATH = str(a)
+            
+            if os.path.exists(PID_PATH):
+                sys.exit("PID already exists. Exiting...")
+            
+            if should_daemon:
+                CREATE_PID = True
+                try:
+                    write_pid(0)
+                except IOError, e:
+                    raise SystemExit("Unable to write PID file: %s [%d]" % (e.strerror, e.errno))
 
         if o in ("--pidfile"):
             pidfile = str(a)
