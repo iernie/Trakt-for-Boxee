@@ -103,8 +103,6 @@ class TraktForBoxee(object):
         if (status["percentage"] >= 90
             and not self.scrobbled):
                 self.log.info("Scrobbling to Trakt")
-                if (self.NOTIFY_BOXEE):
-                    self.boxee_client.showNotification("Scrobbling to Trakt!")
                 
                 try:
                     self.trakt_client.update_media_status(status["title"],
@@ -119,8 +117,13 @@ class TraktForBoxee(object):
                                                           season=status["season"],
                                                           episode=status["episode"])
                     self.scrobbled = True
+                    if (self.NOTIFY_BOXEE):
+                        self.boxee_client.showNotification("Scrobbled to Trakt!")
                 except TraktClient.TraktError, (e):
                     self.log.error("An error occurred while trying to scrobble: " + e.msg)
+                    if ("scrobbled" in e.msg and "already" in e.msg):
+                        self.log.info("Seems we've already scrobbled this episode recently, aborting scrobble attempt.")
+                        self.scrobbled = True
                 
         elif (status["percentage"] < 90
               and not self.scrobbled
