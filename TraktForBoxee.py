@@ -16,17 +16,23 @@ TIMER_INTERVAL = 10
 
 class TraktForBoxee(object):
 
-    def __init__(self, file_logging=False):
+    def __init__(self, datadir, configfile):
+        logfile = datadir + "TraktForBoxee.log"
+        
         logging.basicConfig(format="%(asctime)s::%(name)s::%(levelname)s::%(message)s",
                             level=logging.INFO,
-                            filename=file_logging,
+                            filename=logfile,
                             stream=sys.stdout)
 
         self.log = logging.getLogger("TraktForBoxee")
-        self.log.info("Initialized Trakt for Boxee.")
+        self.log.info("Initialized Trakt for Boxee."
+        
+        if not os.path.isfile(configfile):
+            self.log.error("Config file " + configfile + " not found, exiting.")
+            exit()
 
         self.config = ConfigParser.RawConfigParser()
-        self.config.read(sys.path[0] + "/settings.cfg")
+        self.config.read(configfile)
 
         boxee_ip = self.config.get("Boxee", "IP")
         boxee_port = self.config.getint("Boxee", "Port")
@@ -231,11 +237,14 @@ def daemonize(pidfile=""):
 if __name__ == '__main__':
     should_pair = should_daemon = False
     pidfile = ""
+    datadir = sys.path[0]
+    logfile = ""
+    config = ""
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "dp", ['daemon', 'pair', 'pidfile=']) #@UnusedVariable
+        opts, args = getopt.getopt(sys.argv[1:], "dp", ['daemon', 'pair', 'pidfile=', 'datadir=', 'config=']) #@UnusedVariable
     except getopt.GetoptError:
-        print "Available options: --daemon, --pair, --pidfile"
+        print "Available options: --daemon, --pair, --pidfile, --datadir, --config"
         sys.exit()
 
     for o, a in opts:
@@ -253,6 +262,14 @@ if __name__ == '__main__':
         # Create pid file
         if o in ('--pidfile',):
             pidfile = str(a)
+        
+        # Determine location of datadir
+        if o in ('--datadir',):
+            datadir = str(a)
+            
+        # Determine location of config file
+        if o in ('--config',):
+            config = str(a)
 
     if should_pair:
         pair()
@@ -261,6 +278,10 @@ if __name__ == '__main__':
         daemonize(pidfile)
     elif (pidfile):
         print "Pidilfe isn't useful when not running as a daemon, ignoring pidfile."
+    
+    if config == "":
+        config = sys.path[0]
+    configfile = config + "/config.ini"
 
-    client = TraktForBoxee("TraktForBoxee.log" if should_daemon else False)
+    client = TraktForBoxee(datadir, configfile)
     client.run()
