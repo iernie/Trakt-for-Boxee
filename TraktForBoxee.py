@@ -17,7 +17,7 @@ TIMER_INTERVAL = 10
 class TraktForBoxee(object):
 
     def __init__(self, datadir, configfile):
-        logfile = datadir + "TraktForBoxee.log"
+        logfile = datadir + "/TraktForBoxee.log"
         
         logging.basicConfig(format="%(asctime)s::%(name)s::%(levelname)s::%(message)s",
                             level=logging.INFO,
