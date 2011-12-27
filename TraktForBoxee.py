@@ -25,7 +25,7 @@ class TraktForBoxee(object):
                             stream=sys.stdout)
 
         self.log = logging.getLogger("TraktForBoxee")
-        self.log.info("Initialized Trakt for Boxee."
+        self.log.info("Initialized Trakt for Boxee.")
         
         if not os.path.isfile(configfile):
             self.log.error("Config file " + configfile + " not found, exiting.")
