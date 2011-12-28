@@ -29,7 +29,8 @@ APP_NAME="TraktForBoxee.py"
 # Default startup args
 DEFAULT_OPTS="--daemon"
 
-# user
+# run as user
+# works only if using start-stop-daemon
 RUN_AS=admin
 
 ####### END EDIT ME ##########
@@ -39,13 +40,25 @@ test -x $DAEMON || exit 0
 
 start() {
     echo "Starting TraktForBoxee..."
-    start-stop-daemon --quiet -d $APP_PATH -c $RUN_AS --start --pidfile $PID_FILE --exec $DAEMON $APP_NAME -- $DEFAULT_OPTS                    
+    command -v start-stop-daemon > /dev/null
+    if [[ $? == 0 ]]; then
+        start-stop-daemon --quiet -d $APP_PATH -c $RUN_AS --start --pidfile $PID_FILE --exec $DAEMON $APP_NAME -- $DEFAULT_OPTS                    
+    else
+        cd $APP_PATH
+        $DAEMON $APP_NAME $DEFAULT_OPTS
+    fi
     pgrep -f -x -n -u $RUN_AS "$DAEMON $APP_NAME $DEFAULT_OPTS" > $PID_FILE
+    
 }
 
 stop() {
     echo "Stopping TraktForBoxee..."
-    start-stop-daemon --stop --pidfile $PID_FILE
+    command -v start-stop-daemon > /dev/null
+    if [[  $? == 0 ]]; then 
+        start-stop-daemon --stop --pidfile $PID_FILE
+    else
+        kill `cat $PID_FILE`
+    fi
     rm $PID_FILE
 }
 
