@@ -168,7 +168,7 @@ class TraktForBoxee(object):
 
 def pair():
     config = ConfigParser.RawConfigParser()
-    config.read(sys.path[0] + "/settings.cfg")
+    config.read(sys.path[0] + "/config.ini")
 
     ip = config.get("Boxee", "IP")
     port = config.get("Boxee", "Port")
